@@ -3,15 +3,18 @@
 #include <Servo.h> // servo library 
 #include <Bounce2.h>
 
+#define LED_PIN 13 // Дефолтный светодиод для индикации работы
+
 #define DEBUG 0
-#define LED_PIN 13
-#define ESC_PIN 9
-#define RECEIVER_ESC_PIN 5
+#define ESC_PIN 9 // Пин подключения ESC
+#define RECEIVER_ESC_PIN 5 // Пин подключения приёмника
+#define PEDAL_PIN 6 // Пин, куда подключена педаль машины
+#define MAX_SPEED_POTENTIOMETER_PIN A0 // Пин потенциометра регулировки скорости с педали
+
 #define ESC_NEUTRAL_POSITION 1500
 #define ESC_NEUTRAL_POSITION_THRESHOLD 40
 #define PEDAL_MAX_THROTTLE 1800
-#define PEDAL_PIN 6 // Пин, куда подключена педаль машины
-#define MAX_SPEED_POTENTIOMETER_PIN A0 // Пин потенциометра регулировки скорости с педали
+#define ACCELERATION_SPEED 200
 
 GyverOS<5> OS;	// указать макс. количество задач
 Servo esc; // servo name
@@ -42,8 +45,8 @@ void replicate_receiver_for_esc() {
     }
     if (pedal_button.isPressed()){
       pedal_state++;
-      if (pedal_state > 100){
-        pedal_state = 100;
+      if (pedal_state > ACCELERATION_SPEED){
+        pedal_state = ACCELERATION_SPEED;
       }
 
       //read max speed settings
