@@ -65,6 +65,7 @@ void replicate_receiver_for_esc() {
       }
       esc.writeMicroseconds(pedal_esc_state);
     }else{
+      pedal_state = 0;
       esc.writeMicroseconds(ESC_NEUTRAL_POSITION);
     }
   }
