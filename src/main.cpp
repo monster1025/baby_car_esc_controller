@@ -5,7 +5,7 @@
 
 #define LED_PIN 13 // Дефолтный светодиод для индикации работы
 
-#define DEBUG 0
+#define DEBUG 1
 #define ESC_PIN 9 // Пин подключения ESC
 #define RECEIVER_ESC_PIN 5 // Пин подключения приёмника
 #define PEDAL_PIN 6 // Пин, куда подключена педаль машины
@@ -14,7 +14,8 @@
 #define ESC_NEUTRAL_POSITION 1500
 #define ESC_NEUTRAL_POSITION_THRESHOLD 40
 #define PEDAL_MAX_THROTTLE 1800
-#define ACCELERATION_SPEED 200
+#define ACCELERATION_SPEED 100
+#define PEDAL_SHIFT_FROM_NEUTRAL 30
 
 GyverOS<5> OS;	// указать макс. количество задач
 Servo esc; // servo name
@@ -53,7 +54,7 @@ void replicate_receiver_for_esc() {
       int rotate_value = analogRead(MAX_SPEED_POTENTIOMETER_PIN);
       int max_speed_ms = map(rotate_value, 0, 1023, ESC_NEUTRAL_POSITION, PEDAL_MAX_THROTTLE);
 
-      int pedal_esc_state = map(pedal_state, 0, 100, ESC_NEUTRAL_POSITION, max_speed_ms);
+      int pedal_esc_state = PEDAL_SHIFT_FROM_NEUTRAL +map(pedal_state, 0, ACCELERATION_SPEED, ESC_NEUTRAL_POSITION, max_speed_ms);
 
       if (DEBUG){
         Serial.print("Pedal is pressed; state: ");
@@ -96,7 +97,7 @@ void setup() {
   pinMode(RECEIVER_ESC_PIN, INPUT); // Set our input pins as such
 
   //attach pedal
-  pedal_button.attach( PEDAL_PIN, INPUT_PULLUP ); // USE EXTERNAL PULL-UP
+  pedal_button.attach(PEDAL_PIN, INPUT_PULLUP); // USE EXTERNAL PULL-UP
   pedal_button.interval(5);
   pedal_button.setPressedState(LOW);
 
