@@ -5,7 +5,7 @@
 
 #define LED_PIN 13 // Дефолтный светодиод для индикации работы
 
-#define DEBUG 1
+#define DEBUG 0
 #define ESC_PIN 9 // Пин подключения ESC
 #define RECEIVER_ESC_PIN 5 // Пин подключения приёмника
 #define PEDAL_PIN 6 // Пин, куда подключена педаль машины
@@ -13,9 +13,9 @@
 
 #define ESC_NEUTRAL_POSITION 1500
 #define ESC_NEUTRAL_POSITION_THRESHOLD 40
-#define PEDAL_MAX_THROTTLE 1800
+#define PEDAL_MAX_THROTTLE 1700
 #define ACCELERATION_SPEED 100
-#define PEDAL_SHIFT_FROM_NEUTRAL 30
+#define PEDAL_SHIFT_FROM_NEUTRAL 50
 
 GyverOS<5> OS;	// указать макс. количество задач
 Servo esc; // servo name
@@ -25,11 +25,11 @@ int pedal_state = 0;
 // обработчики задач
 void replicate_receiver_for_esc() {
   // выводит свой период в порт
-  if (DEBUG){
-    static uint32_t ms;
-    Serial.println(millis() - ms);
-    ms = millis();
-  }
+  // if (DEBUG){
+  //   static uint32_t ms;
+  //   Serial.println(millis() - ms);
+  //   ms = millis();
+  // }
   int current_receiver_esc_value = pulseIn(RECEIVER_ESC_PIN, HIGH, 25000);
   if (current_receiver_esc_value == 0)
   {
@@ -54,7 +54,7 @@ void replicate_receiver_for_esc() {
       int rotate_value = analogRead(MAX_SPEED_POTENTIOMETER_PIN);
       int max_speed_ms = map(rotate_value, 0, 1023, ESC_NEUTRAL_POSITION, PEDAL_MAX_THROTTLE);
 
-      int pedal_esc_state = PEDAL_SHIFT_FROM_NEUTRAL +map(pedal_state, 0, ACCELERATION_SPEED, ESC_NEUTRAL_POSITION, max_speed_ms);
+      int pedal_esc_state = PEDAL_SHIFT_FROM_NEUTRAL + map(pedal_state, 0, ACCELERATION_SPEED, ESC_NEUTRAL_POSITION, max_speed_ms);
 
       if (DEBUG){
         Serial.print("Pedal is pressed; state: ");
@@ -77,7 +77,6 @@ void replicate_receiver_for_esc() {
       Serial.print("Receiver ESC channel 2:"); // Print the value of 
       Serial.println(current_receiver_esc_value);        // each channel
     }
-
     esc.writeMicroseconds(current_receiver_esc_value);
   }
 }
@@ -85,13 +84,6 @@ void replicate_receiver_for_esc() {
 void setup() {
   Serial.begin(9600);
   pinMode(LED_PIN, OUTPUT);
-
-  // подключаем задачи (порядковый номер, имя функции, период в мс)
-  OS.attach(0, replicate_receiver_for_esc, 40);
-
-  //attach esc
-  esc.attach(ESC_PIN);
-  esc.writeMicroseconds(ESC_NEUTRAL_POSITION); // Turn the motor from the android app
 
   //attach receiver
   pinMode(RECEIVER_ESC_PIN, INPUT); // Set our input pins as such
@@ -103,6 +95,13 @@ void setup() {
 
   //attach max speed potentiometer
   pinMode(MAX_SPEED_POTENTIOMETER_PIN, INPUT);
+
+  //attach esc
+  esc.attach(ESC_PIN);
+  esc.writeMicroseconds(ESC_NEUTRAL_POSITION); // Turn the motor from the android app
+
+  // подключаем задачи (порядковый номер, имя функции, период в мс)
+  OS.attach(0, replicate_receiver_for_esc, 40);
 }
 
 void loop() {
